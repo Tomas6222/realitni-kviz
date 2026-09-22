@@ -17,4 +17,6 @@ V souboru `index.html` je konstanta `LEAD_ENDPOINT`. Po vložení adresy Google 
 
 ## Publikace
 
-Repozitář obsahuje GitHub Actions workflow pro GitHub Pages. V nastavení repozitáře zvolte **Settings → Pages → Source: GitHub Actions**.
+Web je publikovaný přes GitHub Pages přímo z větve `main` a složky `/(root)`.
+
+Veřejná adresa: https://tomas6222.github.io/realitni-kviz/
