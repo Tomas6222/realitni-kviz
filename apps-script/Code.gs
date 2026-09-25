@@ -9,6 +9,12 @@
  *    SMARTEMAILING_API_KEY = <API klíč>
  *    SMARTEMAILING_USERNAME = ypw
  *    SMARTEMAILING_LIST_ID = 368
+ *    SMARTEMAILING_CF_LEAD_ID = <ID vlastního textového pole "Realitní kvíz – Lead">
+ *    Volitelně:
+ *    SMARTEMAILING_CF_SCORE_ID = <ID pole skóre>
+ *    SMARTEMAILING_CF_PROFILE_ID = <ID pole profil>
+ *    SMARTEMAILING_CF_REGION_ID = <ID pole lokalita>
+ *    SMARTEMAILING_CF_TIMING_ID = <ID pole termín změny>
  * 4) Deploy -> New deployment -> Web app
  *    Execute as: Me
  *    Who has access: Anyone
@@ -120,6 +126,13 @@ function sendToSmartEmailing_(data, profile) {
     'SOURCE=' + (data.source || 'realitni-kviz')
   ].join(' | ');
 
+  const customFields = [];
+  addCustomField_(customFields, props.getProperty('SMARTEMAILING_CF_LEAD_ID'), data.leadClass || '');
+  addCustomField_(customFields, props.getProperty('SMARTEMAILING_CF_SCORE_ID'), num_(data.score && data.score.overall));
+  addCustomField_(customFields, props.getProperty('SMARTEMAILING_CF_PROFILE_ID'), profile);
+  addCustomField_(customFields, props.getProperty('SMARTEMAILING_CF_REGION_ID'), data.region || '');
+  addCustomField_(customFields, props.getProperty('SMARTEMAILING_CF_TIMING_ID'), data.timing || '');
+
   const payload = {
     settings: {
       update: true,
@@ -136,6 +149,7 @@ function sendToSmartEmailing_(data, profile) {
       cellphone: String(data.phone || '').trim(),
       language: 'cs_CZ',
       notes: note,
+      customfields: customFields,
       contactlists: [{
         id: listId,
         status: 'confirmed'
@@ -159,6 +173,12 @@ function sendToSmartEmailing_(data, profile) {
     ok: code >= 200 && code < 300,
     response: 'HTTP ' + code + ': ' + text.slice(0, 1200)
   };
+}
+
+function addCustomField_(target, id, value) {
+  const fieldId = Number(id);
+  if (!fieldId || value === '' || value === null || typeof value === 'undefined') return;
+  target.push({ id: fieldId, value: String(value) });
 }
 
 function validate_(data) {
