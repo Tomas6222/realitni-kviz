@@ -9,6 +9,9 @@
  *    SMARTEMAILING_API_KEY = <API klíč>
  *    SMARTEMAILING_USERNAME = ypw
  *    SMARTEMAILING_LIST_ID = 368
+ *    SMARTEMAILING_LIST_ID_A = <ID seznamu Lead A>  (volitelné)
+ *    SMARTEMAILING_LIST_ID_B = <ID seznamu Lead B>  (volitelné)
+ *    SMARTEMAILING_LIST_ID_C = <ID seznamu Lead C>  (volitelné)
  *    SMARTEMAILING_CF_LEAD_ID = <ID vlastního textového pole "Realitní kvíz – Lead">
  *    Volitelně:
  *    SMARTEMAILING_CF_SCORE_ID = <ID pole skóre>
@@ -110,6 +113,8 @@ function sendToSmartEmailing_(data, profile) {
   const username = props.getProperty('SMARTEMAILING_USERNAME') || 'ypw';
   const apiKey = props.getProperty('SMARTEMAILING_API_KEY');
   const listId = Number(props.getProperty('SMARTEMAILING_LIST_ID') || '368');
+  const leadClass = String(data.leadClass || '').toUpperCase();
+  const leadListId = Number(props.getProperty('SMARTEMAILING_LIST_ID_' + leadClass) || '0');
 
   if (!apiKey) {
     return { ok: false, response: 'Chybí SMARTEMAILING_API_KEY v Script Properties.' };
@@ -133,6 +138,11 @@ function sendToSmartEmailing_(data, profile) {
   addCustomField_(customFields, props.getProperty('SMARTEMAILING_CF_REGION_ID'), data.region || '');
   addCustomField_(customFields, props.getProperty('SMARTEMAILING_CF_TIMING_ID'), data.timing || '');
 
+  const contactlists = [{ id: listId, status: 'confirmed' }];
+  if (leadListId && leadListId !== listId) {
+    contactlists.push({ id: leadListId, status: 'confirmed' });
+  }
+
   const payload = {
     settings: {
       update: true,
@@ -150,10 +160,7 @@ function sendToSmartEmailing_(data, profile) {
       language: 'cs_CZ',
       notes: note,
       customfields: customFields,
-      contactlists: [{
-        id: listId,
-        status: 'confirmed'
-      }]
+      contactlists: contactlists
     }]
   };
 
@@ -171,7 +178,7 @@ function sendToSmartEmailing_(data, profile) {
   const text = response.getContentText();
   return {
     ok: code >= 200 && code < 300,
-    response: 'HTTP ' + code + ': ' + text.slice(0, 1200)
+    response: 'HTTP ' + code + ' | lead=' + leadClass + ' | list=' + listId + (leadListId ? ' | leadList=' + leadListId : '') + ': ' + text.slice(0, 1200)
   };
 }
 
